@@ -1,15 +1,15 @@
 from fastapi import APIRouter,HTTPException
-from .ai_suggestions_schema import ai_suggestions_request, ai_suggestions_response
-from .ai_suggestions import Suggestion
+from .chatbot_schema import chat_request, chat_response
+from .chatbot_schema import Chat
 
 router = APIRouter()
-suggestion=Suggestion()
+chat= Chat()
 
-@router.post("/ai_suggestions", response_model=ai_suggestions_response)
-async def ai_suggestions(request: ai_suggestions_request):
+@router.post("/chatbot", response_model=chat_response)
+async def chat(request: chat_request):
     try:
-        response=Suggestion.get_suggestion(request=ai_suggestions_request)
-        return ai_suggestions_response (response=response)
+        response=Chat.get_suggestion(request=chat_request)
+        return chat_response (response=response)
     
     except Exception as e:
         raise HTTPException (status_code=500, detail=str(e))
