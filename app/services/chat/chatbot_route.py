@@ -1,15 +1,15 @@
-from fastapi import APIRouter,HTTPException
+# app/services/chat/chatbot_route.py
+from fastapi import APIRouter, HTTPException
 from .chatbot_schema import chat_request, chat_response
-from .chatbot_schema import Chat
+from .chatbot import Chat
 
-router = APIRouter()
-chat= Chat()
+router = APIRouter(prefix="/api", tags=["Chatbot"])
 
-@router.post("/chatbot", response_model=chat_response)
-async def chat(request: chat_request):
+@router.post("/chat", response_model=chat_response)
+async def chat_endpoint(request: chat_request):
     try:
-        response=Chat.get_suggestion(request=chat_request)
-        return chat_response (response=response)
-    
+        chat = Chat()
+        response = chat.get_response(request)
+        return response
     except Exception as e:
-        raise HTTPException (status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
