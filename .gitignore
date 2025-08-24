@@ -25,9 +25,8 @@ ENV/
 # Logs
 *.log
 
-# Static and temp images
-static/edited_images/
-temp_images/
+# chromaDB local storage
+chroma_db/
 
 # Ignore local config
 *.local

@@ -3,9 +3,11 @@ uvicorn
 pydantic
 pydantic-settings
 python-dotenv
-groq
 openai
 pillow
 requests
+aiohttp
 python-multipart
 typing
+chromadb
+numpy

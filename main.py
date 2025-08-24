@@ -4,15 +4,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import os
 from dotenv import load_dotenv
-
-
-load_dotenv()
-
-# Import routers
 from app.services.ai_suggestions.ai_suggestions_route import router as suggestion_router
 from app.services.chat.chatbot_route import router as chat_router
-from app.services.knowledge.knowledge_route import router as knowledge_router
+from app.utils.knowledge.knowledge_route import router as knowledge_router
 
+load_dotenv()
 
 app = FastAPI(
     title="AdrianaBrill AI Service",

@@ -47,9 +47,7 @@ class Suggestion:
             messages=[
                 {"role": "system", "content": prompt},
                 {"role": "user", "content": data}
-            ],
-            temperature=0.7,
-            response_format={"type": "json_object"}
+            ]
         )
         return completion.choices[0].message.content
     

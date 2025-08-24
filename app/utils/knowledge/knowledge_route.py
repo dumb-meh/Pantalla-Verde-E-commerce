@@ -1,7 +1,6 @@
-# app/services/knowledge/knowledge_route.py
 from fastapi import APIRouter, HTTPException
 from typing import List, Optional
-from app.utils.knowledge import ProductKnowledge, knowledge_manager
+from .knowledge import ProductKnowledge, knowledge_manager
 
 router = APIRouter(prefix="/api/knowledge", tags=["Knowledge Management"])
 

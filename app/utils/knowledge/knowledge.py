@@ -10,18 +10,17 @@ class KnowledgeManager:
         self.collection = vector_db.get_collection()
     
     def add_product(self, product: ProductKnowledge) -> Dict[str, Any]:
-        """Add a new product to the vector database"""
+        """Add a new product to the vector database using the provided productId"""
         try:
-            product_id = str(uuid.uuid4())
+            product_id = product.productId
             
             searchable_text = self._create_searchable_text(product)
             
-            product_dict = product.dict(exclude_none=True)
-            
+            product_dict = product.dict(exclude_none=True) 
             self.collection.add(
                 documents=[searchable_text],
                 metadatas=[product_dict],
-                ids=[product_id]
+                ids=[product_id]  
             )
             
             return {
