@@ -43,7 +43,7 @@ class Suggestion:
                 
     def get_openai_response(self, prompt: str, data: str) -> str:
         completion = self.client.chat.completions.create(
-            model="gpt-3.5-turbo",  
+            model="gpt-4o-mini-search-preview",  
             messages=[
                 {"role": "system", "content": prompt},
                 {"role": "user", "content": data}

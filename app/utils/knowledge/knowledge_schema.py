@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional, Any
+from typing import List, Optional, Union
 from pydantic import BaseModel
 
 class ProductKnowledge(BaseModel):
@@ -7,7 +7,7 @@ class ProductKnowledge(BaseModel):
     model: Optional[str] = None
     brand: Optional[str] = None
     type: Optional[str] = None
-    color: Optional[str] = None
+    color: Union[List[str], str]
     status: Optional[str] = None
     price: Optional[float] = None
     priceWithInstallation: Optional[float] = None
