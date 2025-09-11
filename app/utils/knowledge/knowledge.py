@@ -8,6 +8,16 @@ from .knowledge_schema import ProductKnowledge
 class KnowledgeManager:
     def __init__(self):
         self.collection = vector_db.get_collection()
+        
+    
+    def flatten_metadata(self,metadata: dict) -> dict:
+        flattened = {}
+        for key, value in metadata.items():
+            if isinstance(value, list):
+                flattened[key] = ", ".join(str(v) for v in value)
+            else:
+                flattened[key] = value
+        return flattened
     
     def add_product(self, product: ProductKnowledge) -> Dict[str, Any]:
         """Add a new product to the vector database using the provided productId"""
@@ -16,10 +26,11 @@ class KnowledgeManager:
             
             searchable_text = self._create_searchable_text(product)
             
-            product_dict = product.dict(exclude_none=True) 
+            product_dict = product.dict(exclude_none=True)
+            flattened_metadata = self.flatten_metadata(product_dict) 
             self.collection.add(
                 documents=[searchable_text],
-                metadatas=[product_dict],
+                metadatas=[flattened_metadata],
                 ids=[product_id]  
             )
             

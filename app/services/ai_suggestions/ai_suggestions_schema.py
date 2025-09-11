@@ -8,4 +8,4 @@ class ai_suggestions_request(BaseModel):
 class ai_suggestions_response(BaseModel):
     description:str
     price:str
-    tag:str
+    tags:str
