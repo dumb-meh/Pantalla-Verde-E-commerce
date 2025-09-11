@@ -74,11 +74,12 @@ class KnowledgeManager:
         try:
             searchable_text = self._create_searchable_text(product)
             product_dict = product.dict(exclude_none=True)
+            flattened_metadata = self.flatten_metadata(product_dict) 
             
             self.collection.update(
                 ids=[product_id],
                 documents=[searchable_text],
-                metadatas=[product_dict]
+                metadatas=[flattened_metadata]
             )
             
             return {
