@@ -3,6 +3,8 @@ import json
 import openai
 from dotenv import load_dotenv
 from .ai_suggestions_schema import ai_suggestions_request, ai_suggestions_response
+from pydantic import ValidationError
+from fastapi import HTTPException
 
 load_dotenv()
 
@@ -14,8 +16,18 @@ class Suggestion:
         prompt = self.create_prompt()
         data = self.format_input_data(request)
         response_text = self.get_openai_response(prompt, data)
-        response_dict = json.loads(response_text)
-        return ai_suggestions_response(**response_dict)
+
+        try:
+            json_start = response_text.find('{')
+            json_end = response_text.rfind('}') + 1
+            cleaned_json = response_text[json_start:json_end]
+
+            response_dict = json.loads(cleaned_json)
+            return ai_suggestions_response(**response_dict)
+
+        except (json.JSONDecodeError, ValidationError, TypeError) as e:
+            print("Error parsing JSON:", e)
+            raise HTTPException(status_code=500, detail="AI response was not in expected format.")
     
     def format_input_data(self, request: ai_suggestions_request) -> str:
         return f"""
@@ -26,21 +38,29 @@ class Suggestion:
     
     def create_prompt(self) -> str:
         return """You are an expert e-commerce product description generator.
-        Given the product details, generate a compelling product description, competitive pricing, and relevant tags.
-        
-        IMPORTANT RULES:
-        1. Create original, engaging product descriptions without referencing any external websites
-        2. Suggest realistic market prices based on the product type and brand
-        3. Generate relevant tags for search optimization
-        4. Do not include any URLs, website references, or external links
-        5. Focus only on the product features and benefits
-        6. Respond only in JSON format as specified below no extra text, no markdowns
-        {
-            "description": "Detailed product description here",
-            "price": "Suggested price in USD",
-            "tags": "comma-separated relevant tags"
-        }"""
-                
+
+    Generate a compelling product description, a realistic competitive price in USD, and relevant SEO-friendly tags from the product details.
+
+    STRICT RULES:
+    1. Output MUST be a valid JSON object only — no markdown, no explanations, no extra text.
+    2. Do NOT include any external links or references.
+    3. The JSON object MUST follow this exact structure:
+    {
+    "description": "string",
+    "price": "string",
+    "tags": "string (comma-separated)"
+    }
+
+    Example:
+    {
+    "description": "A beautiful and high-performing 4K TV...",
+    "price": "$499.99",
+    "tags": "4K, television, smart TV, UHD, 55-inch, home entertainment"
+    }
+
+    Now generate the JSON object based on the following product details:
+    """
+     
     def get_openai_response(self, prompt: str, data: str) -> str:
         completion = self.client.chat.completions.create(
             model="gpt-4o-mini-search-preview",  
