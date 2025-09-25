@@ -13,7 +13,7 @@ load_dotenv()
 class Chat:
     def __init__(self):
         self.client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        self.product_api_base = "https://fzjn9pz1-5101.inc1.devtunnels.ms/api/v1/products"
+        self.product_api_base = "api.pantallaverde.com/api/v1/products"
     
     async def get_response(self, request: chat_request) -> chat_response:
         user_intent = self.analyze_user_intent(request.message)
