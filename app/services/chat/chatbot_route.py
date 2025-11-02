@@ -6,10 +6,10 @@ from .chatbot import Chat
 router = APIRouter(prefix="/api", tags=["Chatbot"])
 
 @router.post("/chatbot", response_model=chat_response)
-async def chat_endpoint(request: chat_request, id: str = Header(None)):
+async def chat_endpoint(request: chat_request, id_user: str = Header(None)):
     try:
         chat = Chat()
-        response = await chat.get_response(request, id)
+        response = await chat.get_response(request, id_user)
         return response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
