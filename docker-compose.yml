@@ -12,12 +12,24 @@ services:
     restart: unless-stopped
     networks:
       - adrianabrill_AI_network
+    depends_on:
+      - redis
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8085/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
+
+  redis:
+    image: redis:7-alpine
+    container_name: adrianabrill_AI_redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - adrianabrill_AI_network
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
 
   nginx:
     image: nginx:alpine

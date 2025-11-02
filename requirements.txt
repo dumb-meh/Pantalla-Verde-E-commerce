@@ -11,3 +11,4 @@ typing
 numpy
 chromadb>=0.4.24
 openai>=1.0.0
+redis>=5.0.0

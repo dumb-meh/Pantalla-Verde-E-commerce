@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from typing import List, Dict, Optional
 from .chatbot_schema import chat_request, chat_response, HistoryItem
 from app.utils.knowledge.knowledge import knowledge_manager
+from app.utils.cache_manager import cache_manager
 
 load_dotenv()
 
@@ -14,10 +15,15 @@ class Chat:
     def __init__(self):
         self.client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         self.product_api_base = "api.pantallaverde.com/api/v1/products"
-    
-    async def get_response(self, request: chat_request) -> chat_response:
+
+    async def get_response(self, request: chat_request, id: str) -> chat_response:
+        # Get history: use provided history or fetch from cache
+        history = request.history
+        if not history and id:
+            history = cache_manager.get_history(id)
+        
         # First AI response to determine if vectordb search is needed
-        analysis_result = self.analyze_message(request.message, request.history)
+        analysis_result = self.analyze_message(request.message, history)
 
         # Validate analysis result format
         if not isinstance(analysis_result, dict):
@@ -43,11 +49,13 @@ class Chat:
                 request.message, 
                 relevant_products,
                 user_language,
-                request.history
+                history
             )
         else:
-            # No vector search needed, use the direct response
             response_text = analysis_result.get("response", "I'm sorry, I couldn't understand your request.")
+
+        if id:
+            cache_manager.update_history(id, request.message, response_text, history)
         
         return chat_response(
             response=response_text,
@@ -73,7 +81,7 @@ class Chat:
         # Prepare conversation context
         history_context = ""
         if history:
-            recent_history = history[-3:] if len(history) > 3 else history
+            recent_history = history[-8:] if len(history) > 8 else history
             history_context = "\n".join([f"User: {h.message}\nAssistant: {h.response}" for h in recent_history])
         else:
             history_context = "No prior conversation"

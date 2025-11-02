@@ -17,6 +17,11 @@ class Settings(BaseSettings):
 
     PRODUCT_API_BASE_URL: str = "https://fzjn9pz1-5101.inc1.devtunnels.ms/api/v1/products"
     
+    # Redis configuration for session caching
+    REDIS_URL: str = "redis://localhost:6379"
+    REDIS_DB: int = 0
+    CACHE_TTL_HOURS: int = 24
+    
     class Config:
         env_file = ".env"
         case_sensitive = True
