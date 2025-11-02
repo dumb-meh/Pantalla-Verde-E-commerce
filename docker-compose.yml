@@ -31,20 +31,6 @@ services:
       - adrianabrill_AI_network
     command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
 
-  nginx:
-    image: nginx:alpine
-    container_name: adrianabrill_AI_nginx
-    ports:
-      - "8086:8086"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      app:
-        condition: service_healthy
-    restart: unless-stopped
-    networks:
-      - adrianabrill_AI_network
-
 networks:
   adrianabrill_AI_network: 
     driver: bridge
