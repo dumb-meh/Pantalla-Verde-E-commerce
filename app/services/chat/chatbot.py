@@ -117,14 +117,18 @@ class Chat:
         }}
         """
 
+
         try:
             completion = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": "You are an intent classifier and response generator that outputs only valid JSON."},
                     {"role": "user", "content": prompt}
+                    {"role": "system", "content": "You are an intent classifier and response generator that outputs only valid JSON."},
+                    {"role": "user", "content": prompt}
                 ],
                 temperature=0.3,
+                max_tokens=250
                 max_tokens=250
             )
 
@@ -134,7 +138,23 @@ class Chat:
             result = json.loads(result_text)
             return result
 
+
+            # Parse model output
+            import json
+            result_text = completion.choices[0].message.content.strip()
+            result = json.loads(result_text)
+            return result
+
         except Exception as e:
+            print(f"Error in analyze_message: {e}")
+            return {
+                "vector_search": False,
+                "vector_query": "",
+                "language": "unknown",
+                "response": "Sorry, I couldn't process your message right now.",
+                "user_msg": message
+            }
+
             print(f"Error in analyze_message: {e}")
             return {
                 "vector_search": False,
@@ -217,7 +237,11 @@ class Chat:
     
     def generate_response_with_products(self, original_message: str, products: List[Dict], user_language: str, history: Optional[List[HistoryItem]] = None) -> str:
         """Generate a response with products in the user's original language"""
+    def generate_response_with_products(self, original_message: str, products: List[Dict], user_language: str, history: Optional[List[HistoryItem]] = None) -> str:
+        """Generate a response with products in the user's original language"""
         
+        messages = [{"role": "system", "content": self.get_system_prompt_with_products(products, user_language, history)}]
+        messages.append({"role": "user", "content": original_message})
         messages = [{"role": "system", "content": self.get_system_prompt_with_products(products, user_language, history)}]
         messages.append({"role": "user", "content": original_message})
         
@@ -232,6 +256,35 @@ class Chat:
         except Exception as e:
             return "I apologize, but I'm having trouble processing your request. Please try again later."
     
+    def get_system_prompt_with_products(self, products: List[Dict], user_language: str, history: Optional[List[HistoryItem]] = None) -> str:
+        """Generate system prompt for responses with products"""
+        context = self.format_product_context_with_stock(products)
+        
+        history_text = ""
+        if history:
+            recent_history = history[-3:] if len(history) > 3 else history
+            history_text = "\n".join([f"User: {h.message}\nAssistant: {h.response}" for h in recent_history])
+        else:
+            history_text = "No prior history."
+        
+        return f"""You are a helpful e-commerce assistant with access to real-time inventory.
+        
+        Available products in our store:
+        {context}
+        
+        User's conversation history:
+        {history_text}
+        
+        IMPORTANT: The user's message language is detected as: {user_language}
+        You MUST respond in {user_language}.
+        
+        Guidelines for your response:
+        1. Answer the user's specific question directly and naturally in {user_language}
+        2. Reference conversation history when relevant to provide context
+        3. Only mention stock status, prices, or features when specifically asked or when comparing
+        4. Be conversational and helpful without being pushy or promotional
+        5. Keep responses focused and concise
+        6. ALWAYS respond in {user_language} - this is critical"""
     def get_system_prompt_with_products(self, products: List[Dict], user_language: str, history: Optional[List[HistoryItem]] = None) -> str:
         """Generate system prompt for responses with products"""
         context = self.format_product_context_with_stock(products)

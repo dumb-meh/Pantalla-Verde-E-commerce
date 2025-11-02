@@ -39,6 +39,7 @@ class Suggestion:
     def create_prompt(self) -> str:
         return """You are an expert e-commerce product description generator.
 
+<<<<<<< HEAD
             Generate a compelling product description, a realistic competitive price in USD, and relevant SEO-friendly tags from the product details.
 
             STRICT RULES:
@@ -60,6 +61,29 @@ class Suggestion:
 
             Now generate the JSON object based on the following product details:
             """
+=======
+    Generate a compelling product description, a realistic competitive price in USD, and relevant SEO-friendly tags from the product details.
+
+    STRICT RULES:
+    1. Output MUST be a valid JSON object only — no markdown, no explanations, no extra text.
+    2. Do NOT include any external links or references.
+    3. The JSON object MUST follow this exact structure:
+    {
+    "description": "string",
+    "price": "string",
+    "tags": "string (comma-separated)"
+    }
+
+    Example:
+    {
+    "description": "A beautiful and high-performing 4K TV...",
+    "price": "$499.99",
+    "tags": "4K, television, smart TV, UHD, 55-inch, home entertainment"
+    }
+
+    Now generate the JSON object based on the following product details:
+    """
+>>>>>>> 0e3ed77b1374643fb35d5b3a7c5e37e679ff04f5
      
     def get_openai_response(self, prompt: str, data: str) -> str:
         completion = self.client.chat.completions.create(
