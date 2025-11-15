@@ -68,6 +68,9 @@ class Chat:
         1. Whether a vector database search is needed.
         2. If not needed, generate a direct LLM response in the same language.
         3. If needed, generate an English query for vector search and detect user language.
+        4. Don't answer anything that is not related to E-commerce products.
+        5. You are an AI assistant for an e-commerce store called Pantalla Verde.
+        
 
         Returns:
             {
