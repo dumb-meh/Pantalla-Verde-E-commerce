@@ -63,7 +63,16 @@ class Chat:
         )
     
     def analyze_message(self, message: str, history: Optional[List[HistoryItem]] = None) -> dict:
-        """You are an AI shopping assistant for Pantalla Verde, an e-commerce store specializing in electronics, clothing, and accessories.
+        """Analyze user message to determine if vector search is needed and generate appropriate response"""
+        # Prepare conversation context
+        history_context = ""
+        if history:
+            recent_history = history[-8:] if len(history) > 8 else history
+            history_context = "\n".join([f"User: {h.message}\nAssistant: {h.response}" for h in recent_history])
+        else:
+            history_context = "No prior conversation"
+
+        system_prompt = """You are an AI shopping assistant for Pantalla Verde, an e-commerce store specializing in electronics, clothing, and accessories.
 
 Use hidden internal reasoning (chain of thought) to decide what to output, but NEVER reveal your reasoning. Only output the final JSON response.
 
@@ -79,7 +88,7 @@ FIRST: Internally check whether the user's message is about:
 - customer service
 - OR asking what Pantalla Verde / this website is
 
-If the user asks about Pantalla Verde or the website itself (e.g., “What is this site?”, “What is Pantalla Verde?”):
+If the user asks about Pantalla Verde or the website itself (e.g., "What is this site?", "What is Pantalla Verde?"):
 Respond with:
 {"vector_search": false,
  "vector_query": "",
@@ -130,55 +139,45 @@ WORKFLOW (internal reasoning only)
    - Follow-ups, store policies, comparisons → vector_search = false
 
 Always respond in valid JSON only.
-Always reply in the user’s detected language.
+Always reply in the user's detected language.
 NEVER reveal chain-of-thought or hidden reasoning.
-"""
-        # Prepare conversation context
-        history_context = ""
-        if history:
-            recent_history = history[-8:] if len(history) > 8 else history
-            history_context = "\n".join([f"User: {h.message}\nAssistant: {h.response}" for h in recent_history])
-        else:
-            history_context = "No prior conversation"
 
-        prompt = f"""
-        Analyze the user's message and conversation history to determine if a product database (vector) search is required.
+Your task:
+1. Detect the language of the message.
+2. Apply guardrails to check if the message is shopping-related or asking about Pantalla Verde.
+3. Determine if a vector (product) search is needed based on whether the user:
+   - Asks about specific products, features, comparisons, prices, or availability
+   - Requests recommendations or follows up on product discussions
+4. If a vector search is needed:
+   - Return an English search query summarizing the product-related intent
+   - Include the detected language
+5. If a vector search is NOT needed:
+   - Write a helpful, polite response in the **same language** as the user's message
+   - Leave vector_query empty
 
+Respond in strict JSON format:
+{
+    "vector_search": true or false,
+    "vector_query": "string (empty if not needed)",
+    "language": "detected language name",
+    "response": "LLM response if no vector search, empty otherwise",
+    "user_msg": "original user message"
+}"""
+
+        user_prompt = f"""
         Current user message:
         "{message}"
 
         Recent conversation history:
         {history_context}
-
-        Your task:
-        1. Detect the language of the message.
-        2. Determine if a vector (product) search is needed based on whether the user:
-        - Asks about specific products, features, comparisons, prices, or availability
-        - Requests recommendations or follows up on product discussions
-        3. If a vector search is needed:
-        - Return an English search query summarizing the product-related intent
-        - Include the detected language
-        4. If a vector search is NOT needed:
-        - Write a helpful, polite response in the **same language** as the user's message
-        - Leave vector_query empty
-
-        Respond in strict JSON format:
-        {{
-            "vector_search": true or false,
-            "vector_query": "string (empty if not needed)",
-            "language": "detected language name",
-            "response": "LLM response if no vector search, empty otherwise",
-            "user_msg": "{message}"
-        }}
         """
-
 
         try:
             completion = self.client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": "You are an intent classifier and response generator that outputs only valid JSON."},
-                    {"role": "user", "content": prompt}
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt}
                 ],
                 temperature=0.3,
                 max_tokens=250
