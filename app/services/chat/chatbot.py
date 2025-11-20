@@ -331,10 +331,32 @@ Respond in strict JSON format:
                 parts.append(f"- Brand: {data['brand']}")
             if data.get('model'):
                 parts.append(f"- Model: {data['model']}")
-            if data.get('price'):
-                parts.append(f"- Price: ${data['price']}")
-            if data.get('priceWithInstallation'):
-                parts.append(f"- Price with installation: ${data['priceWithInstallation']}")
+            
+            # Handle pricing with offers
+            original_price = data.get('price')
+            offer_percentage = data.get('offer')
+            
+            if original_price and offer_percentage:
+                # Calculate discounted price
+                discount_amount = original_price * (offer_percentage / 100)
+                current_price = original_price - discount_amount
+                
+                parts.append(f"- Original Price: ${original_price:.2f}")
+                parts.append(f"- Current Price: ${current_price:.2f} ({offer_percentage}% OFF)")
+                parts.append(f"- You Save: ${discount_amount:.2f}")
+            elif original_price:
+                parts.append(f"- Price: ${original_price}")
+            
+            # Handle installation price with offers
+            installation_price = data.get('priceWithInstallation')
+            if installation_price and offer_percentage:
+                discount_amount_install = installation_price * (offer_percentage / 100)
+                current_install_price = installation_price - discount_amount_install
+                
+                parts.append(f"- Original Price with Installation: ${installation_price:.2f}")
+                parts.append(f"- Current Price with Installation: ${current_install_price:.2f} ({offer_percentage}% OFF)")
+            elif installation_price:
+                parts.append(f"- Price with installation: ${installation_price}")
             
             total_stock = data.get('totalStock')
             stock_status = data.get('stockStatus', 'unknown')

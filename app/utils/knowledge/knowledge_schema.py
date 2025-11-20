@@ -14,3 +14,4 @@ class ProductKnowledge(BaseModel):
     condition: Optional[str] = None
     warrantyType: Optional[str] = None
     description: Optional[str] = None
+    offer: Optional[str] = None
